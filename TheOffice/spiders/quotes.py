@@ -9,12 +9,23 @@ class QuotesSpider(scrapy.Spider):
 
     def parse(self, response):
 
-        # pull stuff out here
+        season = response.css('td[bgcolor="#FFF8DC"] b:first-of-type::text').get().split('-')[0]
+        episode = response.css('td[bgcolor="#FFF8DC"] b:first-of-type::text').get().split('-')[1]
+
+        title = response.css('td[bgcolor="#FFF8DC"] b:nth-of-type(2)::text').get()
+
+        written_by = response.css('td[bgcolor="#FFF8DC"]::text').getall()[3].strip()
+        directed_by = response.css('td[bgcolor="#FFF8DC"]::text').getall()[4].strip()
+        transcribed_by = response.css('td[bgcolor="#FFF8DC"]::text').getall()[5].strip()
 
         # yield as a dictionary
         new_episode = {
-            'season': 0,
-            'episode': 0,
+            'season': season,
+            'episode': episode,
+            'title': title,
+            'written_by': written_by,
+            'directed_by': directed_by,
+            'transcribed_by': transcribed_by,
             'scenes': {}
         }
 
@@ -28,13 +39,17 @@ class QuotesSpider(scrapy.Spider):
             #     'quotes': {}
             # }
 
+            quotes = response.css('.quote')
+            quotes_text = response.css('.quote::text').getall()
+            quotes_prepared = [q.strip() for q in quotes_text if q.strip() != '']
 
-            # for index, quote in quotes:
-            #
-            #     new_scene['quotes'][index]({
-            #         'author': 'Jim',
-            #         'quote': 'kljdfa'
-            #     })
+            for index, quote in quotes:
+                author = quote.css('b:first-of-type::text').get()[:-1]
+                quote = quotes_prepared[index]
+                new_scene['quotes'][index]({
+                    'author': author,
+                    'quote': quote
+                })
 
         new_episode['scenes'][new_scene['scene_number']] = new_scene
 
