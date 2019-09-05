@@ -42,7 +42,7 @@ class QuotesSpider(scrapy.Spider):
                     'author': text[:-1],
                     'quote': scene_lines_cleaned[(index * 2) + 1]
                 }
-            
+
             # append new scene to episode
             new_episode['scenes'][new_scene['scene_number']] = new_scene
 
@@ -52,7 +52,7 @@ class QuotesSpider(scrapy.Spider):
         current_page = str(response.request.url).split('/')[-1]
 
         # Get the first link that happens after our current link
-        next_page = response.css(f'.navEp a[href="{current_page}"] ~ a:first-of-type::attr(href)').get()
+        next_page = response.css(f'.navEp a[href="{current_page}"] ~ a::attr(href)').get()
         if next_page:
             next_page = response.urljoin(next_page)
             yield scrapy.Request(next_page, callback=self.parse)
