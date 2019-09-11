@@ -5,7 +5,7 @@ import scrapy
 class QuotesSpider(scrapy.Spider):
     name = 'quotes'
     allowed_domains = ['officequotes.net']
-    start_urls = ['http://www.officequotes.net/no1-01.php']
+    start_urls = ['http://www.officequotes.net/no1-05.php']
 
     def parse(self, response):
         season, episode = response.css('td[bgcolor="#FFF8DC"] b:first-of-type::text').get().split(' - ')
@@ -38,24 +38,26 @@ class QuotesSpider(scrapy.Spider):
 
             # loop through every other line in scene (which is the line with the author name)
             for index, text in enumerate(scene_lines_cleaned[::2]):
-                new_scene['quotes'][index] = {
-                    'author': text[:-1],
-                    'quote': scene_lines_cleaned[(index * 2) + 1]
-                }
+                if ':' in text[:]:
+                    new_scene['quotes'][index] = {
+                        'author': text[: ],
+                        'quote': scene_lines_cleaned[(index * 2) + 1]
+                    }
+
 
             # append new scene to episode
             new_episode['scenes'][new_scene['scene_number']] = new_scene
 
         yield new_episode
 
-        # Take current url, split by / and get the last part (the page name, like asdf.php)
-        current_page = str(response.request.url).split('/')[-1]
+        # # Take current url, split by / and get the last part (the page name, like asdf.php)
+        # current_page = str(response.request.url).split('/')[-1]
 
-        # Get the first link that happens after our current link
-        next_page = response.css(f'.navEp a[href="{current_page}"] ~ a::attr(href)').get()
-        if next_page:
-            next_page = response.urljoin(next_page)
-            yield scrapy.Request(next_page, callback=self.parse)
+        # # Get the first link that happens after our current link
+        # next_page = response.css(f'.navEp a[href="{current_page}"] ~ a::attr(href)').get()
+        # if next_page:
+        #     next_page = response.urljoin(next_page)
+        #     yield scrapy.Request(next_page, callback=self.parse)
 
-        # command line
-        # scrapy crawl quotes -o filename.json
+        # # command line
+        # # scrapy crawl quotes -o filename.json
